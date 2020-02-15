@@ -5,7 +5,11 @@ app = Flask(__name__)
 def index():
   return "hello world..."
 
-@app.route('/pdf')
-def pdf():
-  return render_template('pdf.html')
+@app.route('/jspdf')
+def jspdf():
+  return render_template('jspdf.html')
+
+@app.route('/pdflib')
+def pdflib():
+  return render_template('pdf-lib.html')
 
