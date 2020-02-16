@@ -6,7 +6,7 @@
   <body>
     <h3>Sample Page</h3>
     <button onclick="modifyPdf()">Modify PDF</button>
-    <div><iframe id="target" width="100%" height="100%"></iframe></div>
+    <div><iframe id="target" width="100%" height="500px"></iframe></div>
 
     <script>
 const { degrees, PDFDocument, rgb, StandardFonts } = PDFLib
@@ -14,9 +14,13 @@ const { degrees, PDFDocument, rgb, StandardFonts } = PDFLib
 async function modifyPdf() {
   const url = '/static/test_outline.pdf'
   const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer())
+  const jpgUrl = 'https://pdf-lib.js.org/assets/cat_riding_unicorn.jpg'
+  const jpgImageBytes = await fetch(jpgUrl).then(res => res.arrayBuffer())
 
   const pdfDoc = await PDFDocument.load(existingPdfBytes)
   const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const jpgImage = await pdfDoc.embedJpg(jpgImageBytes)
+  const jpgDims = jpgImage.scale(0.5)
 
   const pages = pdfDoc.getPages()
   const firstPage = pages[0]
@@ -28,6 +32,13 @@ async function modifyPdf() {
     font: helveticaFont,
     color: rgb(0.95, 0.1, 0.1),
     rotate: degrees(-45),
+  })
+  firstPage.drawImage(jpgImage, {
+    x: 25,
+    y: 25,
+    width: jpgDims.width,
+    height: jpgDims.height,
+    rotate: degrees(30),
   })
 
   const pdfBytes = await pdfDoc.save()
