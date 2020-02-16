@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/@pdf-lib/fontkit/dist/fontkit.umd.min.js"></script>
   </head>
   <body>
     <h3>Sample Page</h3>
@@ -16,9 +17,13 @@ async function modifyPdf() {
   const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer())
   const jpgUrl = 'https://pdf-lib.js.org/assets/cat_riding_unicorn.jpg'
   const jpgImageBytes = await fetch(jpgUrl).then(res => res.arrayBuffer())
+  const ipaexgUrl = 'static/ipaexg.ttf'
+  const ipaexgBytes = await fetch(ipaexgUrl).then(res => res.arrayBuffer())
 
   const pdfDoc = await PDFDocument.load(existingPdfBytes)
+  await pdfDoc.registerFontkit(fontkit)
   const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const ipaexgFont = await pdfDoc.embedFont(ipaexgBytes)
   const jpgImage = await pdfDoc.embedJpg(jpgImageBytes)
   const jpgDims = jpgImage.scale(0.5)
 
@@ -32,6 +37,12 @@ async function modifyPdf() {
     font: helveticaFont,
     color: rgb(0.95, 0.1, 0.1),
     rotate: degrees(-45),
+  })
+  firstPage.drawText('てすと', {
+    x: 10,
+    y: 10,
+    font: ipaexgFont,
+    color: rgb(0.5, 0.1, 0.1),
   })
   firstPage.drawImage(jpgImage, {
     x: 25,
