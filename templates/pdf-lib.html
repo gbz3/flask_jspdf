@@ -6,7 +6,10 @@
   </head>
   <body>
     <h3>Sample Page</h3>
-    <button onclick="modifyPdf()">Modify PDF</button>
+    <canvas id="canvassample" width="500" height="200" style="border:3px solid #000"></canvas>
+    <div style="padding:10px">
+      <button onclick="modifyPdf()">Modify PDF</button>
+    </div>
     <div><iframe id="target" width="100%" height="500px"></iframe></div>
 
     <script>
@@ -15,8 +18,7 @@ const { degrees, PDFDocument, rgb, StandardFonts } = PDFLib
 async function modifyPdf() {
   const url = '/static/test_outline.pdf'
   const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer())
-  const jpgUrl = 'https://pdf-lib.js.org/assets/cat_riding_unicorn.jpg'
-  const jpgImageBytes = await fetch(jpgUrl).then(res => res.arrayBuffer())
+  const pngImageBytes = canvas.toDataURL()
   const ipaexgUrl = 'static/ipaexg.ttf'
   const ipaexgBytes = await fetch(ipaexgUrl).then(res => res.arrayBuffer())
 
@@ -24,8 +26,8 @@ async function modifyPdf() {
   await pdfDoc.registerFontkit(fontkit)
   const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const ipaexgFont = await pdfDoc.embedFont(ipaexgBytes)
-  const jpgImage = await pdfDoc.embedJpg(jpgImageBytes)
-  const jpgDims = jpgImage.scale(0.5)
+  const pngImage = await pdfDoc.embedPng(pngImageBytes)
+  const pngDims = pngImage.scale(0.5)
 
   const pages = pdfDoc.getPages()
   const firstPage = pages[0]
@@ -44,11 +46,11 @@ async function modifyPdf() {
     font: ipaexgFont,
     color: rgb(0.5, 0.1, 0.1),
   })
-  firstPage.drawImage(jpgImage, {
+  firstPage.drawImage(pngImage, {
     x: 25,
     y: 25,
-    width: jpgDims.width,
-    height: jpgDims.height,
+    width: pngDims.width,
+    height: pngDims.height,
     rotate: degrees(30),
   })
 
@@ -58,6 +60,59 @@ async function modifyPdf() {
   var blob = new Blob([pdfBytes], { type: 'application/pdf' });
   iframe.src = URL.createObjectURL(blob);
 }
+
+var canvas = document.getElementById('canvassample'),
+    ctx = canvas.getContext('2d'),
+    moveflg = 0,
+    Xpoint,
+    Ypoint;
+
+// Pen
+var defSize = 5,
+    defColor = "#555";
+
+// for PC
+canvas.addEventListener('mousedown', startPoint, false);
+canvas.addEventListener('mousemove', movePoint, false);
+canvas.addEventListener('mouseup', endPoint, false);
+
+// for SmartPhone
+canvas.addEventListener('touchstart', startPoint, false);
+canvas.addEventListener('touchmove', movePoint, false);
+canvas.addEventListener('touchend', endPoint, false);
+
+function startPoint(e) {
+  e.preventDefault();
+  ctx.beginPath();
+  Xpoint = e.layerX;
+  Ypoint = e.layerY;
+  ctx.moveTo(Xpoint, Ypoint);
+}
+
+function movePoint(e) {
+  if( e.buttons === 1 || e.witch === 1 || e.type == 'touchmove' ) {
+    Xpoint = e.layerX;
+    Ypoint = e.layerY;
+    moveflg = 1;
+    ctx.lineTo(Xpoint, Ypoint);
+    ctx.lineCap = "round";
+    ctx.lineWidth = defSize * 2;
+    ctx.strokeStyle = defColor;
+    ctx.stroke();
+  }
+}
+
+function endPoint(e) {
+  if( moveflg === 0 ) {
+    ctx.lineTo(Xpoint-1, Ypoint-1);
+    ctx.lineCap = "round";
+    ctx.lineWidth = defSize * 2;
+    ctx.strokeStyle = defColor;
+    ctx.stroke();
+  }
+  moveflg = 0;
+}
+
     </script>
   </body>
 </html>
