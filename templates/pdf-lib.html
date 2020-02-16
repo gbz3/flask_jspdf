@@ -8,6 +8,7 @@
     <h3>Sample Page</h3>
     <canvas id="canvassample" width="500" height="200" style="border:3px solid #000"></canvas>
     <div style="padding:10px">
+      <input type="text" id="mytext" style="width:300px" value="This text was added with JavaScript!"></input>
       <button onclick="modifyPdf()">Modify PDF</button>
     </div>
     <div><iframe id="target" width="100%" height="500px"></iframe></div>
@@ -24,7 +25,6 @@ async function modifyPdf() {
 
   const pdfDoc = await PDFDocument.load(existingPdfBytes)
   await pdfDoc.registerFontkit(fontkit)
-  const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const ipaexgFont = await pdfDoc.embedFont(ipaexgBytes)
   const pngImage = await pdfDoc.embedPng(pngImageBytes)
   const pngDims = pngImage.scale(0.5)
@@ -32,26 +32,20 @@ async function modifyPdf() {
   const pages = pdfDoc.getPages()
   const firstPage = pages[0]
   const { width, height } = firstPage.getSize()
-  firstPage.drawText('This text was added with JavaScript!', {
+  firstPage.drawText(document.getElementById('mytext').value, {
     x: 5,
     y: height / 2 + 300,
     size: 50,
-    font: helveticaFont,
-    color: rgb(0.95, 0.1, 0.1),
-    rotate: degrees(-45),
-  })
-  firstPage.drawText('てすと', {
-    x: 10,
-    y: 10,
     font: ipaexgFont,
-    color: rgb(0.5, 0.1, 0.1),
+    color: rgb(0.95, 0.1, 0.1),
+    rotate: degrees(-30),
   })
   firstPage.drawImage(pngImage, {
     x: 25,
     y: 25,
     width: pngDims.width,
     height: pngDims.height,
-    rotate: degrees(30),
+    //rotate: degrees(30),
   })
 
   const pdfBytes = await pdfDoc.save()
